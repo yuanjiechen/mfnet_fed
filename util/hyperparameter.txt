@@ -1,0 +1,7 @@
+round,20
+model_name,testmodel.pkl
+loss_func,cross
+optim,SGD
+test_size,10
+
+
