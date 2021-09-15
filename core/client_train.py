@@ -12,9 +12,11 @@ import torch.nn.functional as F
 from model.MFnet import MFNet
 from util.getlog import get_log
 logger = get_log()
-def c_train(model, dst, distill_dst, dataloader,lossfunc, optim, epoch, device):
+def c_train(model, dst, distill_dst, dataloader, optim, args, device):
     epoch_logits = None
     model.to(device)
+    epoch = args.client_epoch
+    lossfunc = nn.CrossEntropyLoss()
     for i in range(epoch):
         model.train()
         for it, (images,labels,names) in enumerate(dataloader):
@@ -24,7 +26,8 @@ def c_train(model, dst, distill_dst, dataloader,lossfunc, optim, epoch, device):
 
             logits, distill_logits = model(images)
             loss = lossfunc(logits, labels)
-
+            if args.distill_selection == 1:
+                distill_logits = logits
 
             if i == epoch - 1:
                 distill_logits = distill_logits.to("cpu")
@@ -35,6 +38,8 @@ def c_train(model, dst, distill_dst, dataloader,lossfunc, optim, epoch, device):
                         tensors=(epoch_logits, distill_logits),
                         dim=0
                     )
+            loss.backward()
+            optim.step()
 
     avg_logits = torch.mean(
         input=epoch_logits,
@@ -46,5 +51,5 @@ def c_train(model, dst, distill_dst, dataloader,lossfunc, optim, epoch, device):
         obj=model.state_dict(),
         f=str(dst)
     )
-
+    #print(avg_logits.shape)
     avg_logits.tofile(distill_dst)

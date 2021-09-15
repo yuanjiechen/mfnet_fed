@@ -9,34 +9,33 @@ from pathlib import Path
 from typing import Union
 
 logger = logging.getLogger(__name__)
-def calculate_accuracy(logits, labels, flag=False):
+def calculate_accuracy(logits, labels, flag):
     # inputs should be torch.tensor
     predictions = logits.argmax(1)
-    
     no_count = (labels==-1).sum()
     count = ((predictions==labels)*(labels!=-1)).sum()
-    # print(predictions.shape, labels.shape)
-
     acc = count.float() / (labels.numel()-no_count).float()
-    # if flag is True:
-    #     print(logits[0][:][:10][:10])
-    # print(acc, count, labels.numel())
     return acc
 
 
 def calculate_result(cf):
     n_class = cf.shape[0]
     conf = np.zeros((n_class,n_class))
+    class_acc = np.zeros(n_class)
     IoU = np.zeros(n_class)
+
     conf[:,0] = cf[:,0]/cf[:,0].sum()
+
+    for pred in range(0, n_class):
+        class_acc[pred] = cf[pred,pred] / cf[pred, :].sum()
+
     for cid in range(1,n_class):
-        if cf[:,cid].sum() > 0:
-            conf[:,cid] = cf[:,cid]/cf[:,cid].sum()
-            IoU[cid]  = cf[cid,cid]/(cf[cid,1:].sum()+cf[1:,cid].sum()-cf[cid,cid])
+        conf[:,cid] = cf[:,cid]/cf[:,cid].sum()
+        IoU[cid]  = cf[cid,cid]/(cf[cid,1:].sum()+cf[1:,cid].sum()-cf[cid,cid])
     overall_acc = np.diag(cf[1:,1:]).sum()/cf[1:,:].sum()
     acc = np.diag(conf)
 
-    return overall_acc, acc, IoU
+    return overall_acc, acc, IoU, class_acc
 
 
 # for visualization
@@ -64,7 +63,7 @@ def visualize(names, predictions):
             img[pred == cid] = palette[cid]
 
         img = Image.fromarray(np.uint8(img))
-        img.save(names[i].replace('.png', '_pred.png'))
+        img.save(names)#[i].replace('.png', '_pred.png'))
 
 def get_logging_config(cfg_file: Union[str, Path]) -> dict:
     """Get the loggging config dictionary from file.

@@ -15,29 +15,31 @@ class arguments():
         logger.info(f"Lord parameters from {path}")
         if "client_num" not in self.default:
             self.client_num = args.client_num
-            self.check_point = args.check_point
             self.check_date = args.check_date
             self.tag = args.tag
+            self.distill_selection = args.distill_selection
             self.server_epoch = args.server_epoch
             self.client_epoch = args.client_epoch
             self.learning_rate = args.learning_rate
             self.reserve_part = args.reserve_part
+            self.distill_param = args.distill_param
             self.batch_size = args.batch_size
             self.data = args.data
+            self.iid = args.iid_distribution
         else :
             self.client_num = int(self.default["client_num"])
-            self.check_point = args.check_point
             self.check_date = args.check_date
-            self.tag = args.tag
+            self.tag = self.default["tag"]
+            self.distill_selection = int(self.default["distill_selection"])
             self.server_epoch = int(self.default["server_epoch"])
             self.client_epoch = int(self.default["client_epoch"])
             self.learning_rate = float(self.default["learning_rate"])
+            self.distill_param = float(self.default["distill_param"])
             self.reserve_part = float(self.default["reserve_part"])
             self.batch_size = int(self.default["batch_size"])
             self.data = self.default["data"]   
+            self.iid = int(self.default["iid"])
 
-
-        self.model_name = self.default["model_name"]
         self.loss_func = self.default["loss_func"]
         self.optim = self.default["optim"]
         self.test_size = int(self.default["test_size"])
@@ -58,14 +60,12 @@ class arguments():
         dic_ = dic.copy()
         del dic_["path"]
         del dic_["default"]
-        del dic_["check_point"]
         del dic_["check_date"]
         pd.DataFrame(list(dic_.items())).to_csv(str(outpath),index=False,header=False)
 
 def unit_test():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--client_num", type=int, default=10, required=False)#
-    parser.add_argument("-ck", "--check_point", type=bool, default=False, required=False)#
     parser.add_argument("-cd", "--check_date", type=str, default="", required=False)#
     #parser.add_argument("-d", "--device", type=str, default="cpu", required=False)
     parser.add_argument("-ml", "--model_name", type=str, default="testmodel.pth", required=False)

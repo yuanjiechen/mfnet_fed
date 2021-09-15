@@ -18,12 +18,11 @@ from dataprocess.MF_dataset import MF_dataset
 from util.getlog import get_log
 from util.connection import connector, sender, recver
 from dataprocess.augmentation import RandomFlip, RandomCrop, RandomCropOut, RandomBrightness, RandomNoise
-from core.train import train
 from core.client_train import c_train
 logger = get_log("client")
 logger.setLevel(logging.INFO)
 class client():
-    def __init__(self, server_ip="140.114.89.42", port=8888, home=Path("./cache"), args=None) -> None:
+    def __init__(self, server_ip="127.0.0.1", port=8888, home=Path("./cache"), args=None) -> None:
         self.num = -1
         self.sk, self.num = connector(
             ip_addr=server_ip,
@@ -31,8 +30,10 @@ class client():
         )
         self.args = args
 
+        self.model_name = "testmodel.pkl"
+
         self.home = home.joinpath(f"client/client-{self.num}")
-        self.model_path = self.home.joinpath(self.args.model_name)
+        self.model_path = self.home.joinpath(self.model_name)
         self.distill_path = self.home.joinpath("data.npy")
 
         self.device = torch.device("cpu")
@@ -79,15 +80,8 @@ class client():
         model.train()
         lr = self.args.learning_rate * 0.95 ** (itera - 1)
         logger.info(f"Client {self.num} in round {itera} lr = {lr}")
-        if self.args.loss_func == "cross":
-            lossfunc = nn.CrossEntropyLoss()
-        elif self.args.loss_func == "mse":
-            lossfunc = nn.MSELoss()
-
-        if self.args.optim == "adam":
-            optim = opt.Adam(params=model.parameters(),lr=self.lr / math.pow(itera, 1/3))
-        elif self.args.optim == "SGD":
-            optim = opt.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        
+        optim = opt.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
             
         logger.info(f"Client {self.num}->start training")
 
@@ -98,9 +92,8 @@ class client():
                 self.model_path,
                 self.distill_path,
                 self.train_loader,
-                lossfunc,
                 optim,
-                self.args.client_epoch,
+                self.args,
                 self.device,
             )
 
@@ -138,7 +131,6 @@ class client():
 def unit_test():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--client_num", type=int, default=10, required=False)
-    parser.add_argument("-ck", "--check_point", type=bool, default=False, required=False)
     parser.add_argument("-cd", "--check_date", type=str, default="", required=False)
     #parser.add_argument("-d", "--device", type=str, default="cpu", required=False)
     parser.add_argument("-ml", "--model_name", type=str, default="testmodel.pth", required=False)

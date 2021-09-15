@@ -80,7 +80,7 @@ class MF_server(nn.Module):
         x = F.interpolate(x, scale_factor=2, mode='nearest') # unpool1 upsample
         x = self.decode1(x)
 
-        return x
+        return x, x_inf
 
 def unit_test():
     import numpy as np

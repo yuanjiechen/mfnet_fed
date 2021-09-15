@@ -104,19 +104,19 @@ class MFNet(nn.Module):
         x = torch.cat((x_rgb, x_inf), dim=1) # fusion RGB and INF
         # print(x.size())
         # decode
-        x = F.upsample(x, scale_factor=2, mode='nearest') # unpool4
+        x = F.interpolate(x, scale_factor=2, mode='nearest') # unpool4
         # print(x.size())
         # print(torch.cat((x_rgb_p4, x_inf_p4), dim=1).size())
 
         x = self.decode4(x + torch.cat((x_rgb_p4, x_inf_p4), dim=1))
-        x = F.upsample(x, scale_factor=2, mode='nearest') # unpool3
+        x = F.interpolate(x, scale_factor=2, mode='nearest') # unpool3
         x = self.decode3(x + torch.cat((x_rgb_p3, x_inf_p3), dim=1))
-        x = F.upsample(x, scale_factor=2, mode='nearest') # unpool2
+        x = F.interpolate(x, scale_factor=2, mode='nearest') # unpool2
         x = self.decode2(x + torch.cat((x_rgb_p2, x_inf_p2), dim=1))
-        x = F.upsample(x, scale_factor=2, mode='nearest') # unpool1
+        x = F.interpolate(x, scale_factor=2, mode='nearest') # unpool1
         x = self.decode1(x)
 
-        return x
+        return x, x_inf
 
 
 def unit_test():

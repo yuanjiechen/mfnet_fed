@@ -22,13 +22,14 @@ class connection():
         self.send_path = send_path
         self.recv_path = recv_path
 
+        self.model_name = "testmodel.pkl"
     def establish_conn(self):
         self.sk = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        while True:
-            if self.check_port(self.port) == False :
-                self.port = self.port + 1
-            else:
-                break
+        # while True:
+        #     if self.check_port(self.port) == False :
+        #         self.port = self.port + 1
+        #     else:
+        #         break
         try:
             self.sk.bind(('0.0.0.0',self.port))
             self.sk.listen(10)        
@@ -92,7 +93,7 @@ class connection():
             elif data == "SR":
                 sender(
                     sk=client, 
-                    path=str(self.send_path.joinpath(self.args.model_name))
+                    path=str(self.send_path.joinpath(self.model_name))
                 )
 
             elif data == "RE":
@@ -168,7 +169,7 @@ def recver(sk,path):
             
             file_recv.write(data)  
         file_recv.close()
-        print("Receive success")
+        #print("Receive success")
 
     except Exception as msg:#(socket.error,struct.error,IOError) as msg:
         print(msg)

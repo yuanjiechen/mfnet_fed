@@ -15,7 +15,6 @@ class checker():
     def __init__(self, args) -> None:
         self.args = args
         self.home = Path("./cache")
-        self.check_point = self.args.check_point
         self.check_date = self.args.check_date
 
         self.path = {}
@@ -41,23 +40,16 @@ class checker():
             ph = date + f"-{times}"
             temppath = server_home.joinpath(ph)
         
-        if self.check_point == False:
+        if self.check_date == "":
             logger.info(f"New training saved {temppath}")
             temppath.mkdir(exist_ok=False)
-        elif self.check_point == True:
-            
-            if self.check_date == "":
-                times -= 1
-                ph = date + f"-{times}"
-                temppath = server_home.joinpath(ph)
-
-            else:
-                temppath = server_home.joinpath(self.check_date)
-                logger.info(f"Recover training saved {temppath}")
-                print(temppath)
-                if not temppath.exists():
-                    print("check point fail")
-                    return False
+        else:
+            temppath = server_home.joinpath(self.check_date)
+            logger.info(f"Recover training saved {temppath}")
+            print(temppath)
+            if not temppath.exists():
+                print("check point fail")
+                return False
 
 
         temppath.joinpath("train").mkdir(exist_ok=True)
@@ -102,8 +94,6 @@ def unit_test():
     ph = Path(__file__).absolute().parent.parent
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--client_num", type=int, default=10, required=False)
-    #parser.add_argument("-ca", "--cache_path", type=str, default="../cache", required=False)
-    parser.add_argument("-ck", "--check_point", type=bool, default=False, required=False)
     parser.add_argument("-cd", "--check_date", type=str, default="", required=False)
     args = parser.parse_args()
     ps = checker(args=args)
