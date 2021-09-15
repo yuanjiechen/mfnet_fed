@@ -19,7 +19,7 @@ from util.getlog import get_log
 from util.connection import connector, sender, recver
 from dataprocess.augmentation import RandomFlip, RandomCrop, RandomCropOut, RandomBrightness, RandomNoise
 from core.train import train
-
+from core.client_train import c_train
 logger = get_log("client")
 logger.setLevel(logging.INFO)
 class client():
@@ -92,22 +92,19 @@ class client():
         logger.info(f"Client {self.num}->start training")
 
         th = Thread(
-            target=train,
+            target=c_train,
             args=(
-                "client",
                 model,
                 self.model_path,
                 self.distill_path,
-                [],
                 self.train_loader,
                 lossfunc,
                 optim,
-                lr,
                 self.args.client_epoch,
                 self.device,
             )
 
-        )    
+        )     
         th.setDaemon(True)
         th.start()        
         th.join()
