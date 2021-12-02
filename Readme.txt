@@ -1,5 +1,4 @@
-Supplementary materials of "HPFL: Hybrid Federated Learning from Multi Sensor Data with Heterogeneous Privacy Sensitivity Levels".
-Paper ID: 2194
+
 The folder contains the source code and environment used in the experiments of our paper. Please download the dataset from: https://drive.google.com/file/d/1p6s_L3QyVf3xW2rCf1Wj-wjnyWsAwvLz/view?usp=sharing
 
 1. Hardware and software requirements
