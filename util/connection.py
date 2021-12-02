@@ -5,7 +5,8 @@ import struct
 import os
 import argparse
 from pathlib import Path
-
+import time
+from datetime import datetime
 #not complete:
 #messager,  logger, status checker
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class connection():
             self.sk.bind(('0.0.0.0',self.port))
             self.sk.listen(10)        
 
-            print("Initial success",", port : ",self.port)
+            print(f"[{datetime.now()}] Server start success at port {self.port}")
         except socket.error as msg:
             print(msg,"Some error,try again")
             raise
@@ -189,11 +190,6 @@ def unit_test():
     cn = connection(args)
     cn.establish_conn()
 
-    client, num = connector("140.114.89.42",8888)
-    client.send("SR".encode(encoding="utf-8"))
-    recver(client, args.recv_path)
-    print(num)
-    input()
 
 if __name__ == "__main__":
     unit_test()

@@ -115,3 +115,10 @@ dmypy.json
 
 .vscode/
 cache/
+img/
+infenrance/
+client_inference/
+*.xlsx
+*.png
+*.csv
+*.sh

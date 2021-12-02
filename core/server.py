@@ -6,6 +6,7 @@ import sys
 from threading import Thread
 import logging
 import time
+from datetime import datetime
 
 sys.path.append("..")
 
@@ -22,11 +23,11 @@ from util.connection import connection, sender, recver
 from util.parameter import arguments
 from util.util import calculate_accuracy, calculate_result
 from util.getlog import get_log
+from util.FedAdam import FedAdam
 from dataprocess.MF_dataset import MF_dataset
 from dataprocess.augmentation import RandomFlip, RandomCrop, RandomCropOut, RandomBrightness, RandomNoise
 from model.MFnet import MFNet
 from model.MF_server import MF_server
-from model.MF_RGB_test import MF_RGB_test
 from core.server_train import s_train
 logger = get_log()
 logger.setLevel(logging.INFO)
@@ -34,6 +35,7 @@ class server():
     def __init__(self, args):
         self.args = args
         self.args,self.path = self.init_path()
+        
         self.init_conn()
         self.args.save_backup(
             outpath=self.path["result"].joinpath("hyperparameter.txt"),
@@ -67,7 +69,8 @@ class server():
         conn = connection(
             args=self.args,
             send_path=self.path['weight'],
-            recv_path=self.path['train']
+            recv_path=self.path['train'],
+            port=self.args.port
         )
 
         conn.establish_conn()
@@ -149,7 +152,7 @@ class server():
                 i += 1
 
             logger.info(f"Find round {i-1} model")
-
+            logger.warn("FedAdam not support checkpoint !")
             shutil.copy(
                 src=str(model), 
                 dst=str(self.model_path)
@@ -157,6 +160,7 @@ class server():
 
         else:
             model = MFNet(n_class=9)
+            self.server_adam = FedAdam(model, 0.01)
             logger.info("Lord new model")
             torch.save(
                 obj=model.state_dict(), 
@@ -216,6 +220,7 @@ class server():
             obj=split_model.state_dict(), 
             f=self.split_path
         )
+
         return
 
     def fedavg(self):
@@ -223,11 +228,19 @@ class server():
         device=torch.device ("cpu")
 
         agg_model = MFNet(n_class=9).to(device)
-
+        fedadam_init = MFNet(n_class=9).to(device)
         agg_process = self.recv_path.joinpath(self.model_name)
 
         model_list = []
         model_data = []
+
+
+        fedadam_init.load_state_dict(
+            torch.load(
+                f=str(self.model_path),
+                map_location=device
+            )
+        )
 
         for fl in path.rglob("*.pth"):
             temp_model = MFNet(9)
@@ -251,6 +264,12 @@ class server():
         for name,value in agg_model.state_dict().items():
             # step1 aggregation
             agg_model.state_dict()[name].copy_(torch.mean(torch.stack([data[name] for data in model_data]),dim=0))
+
+        if self.args.adam == 1:
+            agg_model = self.server_adam.update(fedadam_init, agg_model)
+
+        else:
+            logger.info("FedAdam off")
             
         torch.save(
             obj=agg_model.state_dict(),
@@ -361,6 +380,7 @@ class server():
         return result
     
     def evalute(self, model):
+        print(f"[{datetime.now()}] Round {self.iteration} start evalation...")
         cf = np.zeros((9, 9))
         class_acc_all = []
         class_iou_all = []
@@ -413,7 +433,7 @@ class server():
             class_acc_all = np.nanmean(np.asarray(class_acc_all),axis=0)
             class_iou_all = np.nanmean(np.asarray(class_iou_all),axis=0)
             class_precision_all = np.nanmean(np.asarray(class_precision_all),axis=0)
-
+            print(f"[{datetime.now()}] Round {self.iteration} evaluation report: ")
             print('| overall accuracy:', overall_acc_all)
             print('| accuracy:', acc_avg / len(self.test_loader))
             print('| loss:', loss_avg / len(self.test_loader))

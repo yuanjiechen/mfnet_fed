@@ -5,6 +5,8 @@ from model.MFnet import MFNet
 from pathlib import Path
 from threading import Thread
 import sys
+import time
+from datetime import datetime
 sys.path.append("..")
 
 import torch
@@ -26,7 +28,7 @@ class client():
         self.num = -1
         self.sk, self.num = connector(
             ip_addr=server_ip,
-            port=port
+            port=args.port
         )
         self.args = args
 
@@ -40,6 +42,7 @@ class client():
         self.train_loader = self.init_dataloader()
 
         logger.info(f"client {self.num} initial success")
+        #print(f"[{datetime.now()}] Client {self.num} initialization success")
     def init_dataloader(self)->DataLoader:
         train_set = MF_dataset(
             data_dir=self.args.data,
@@ -84,7 +87,7 @@ class client():
         optim = opt.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
             
         logger.info(f"Client {self.num}->start training")
-
+       
         th = Thread(
             target=c_train,
             args=(
@@ -102,7 +105,7 @@ class client():
         th.start()        
         th.join()
         
-
+        
         logger.info(f"Client {self.num}->training finish")
         return
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from pathlib import Path
 import time
@@ -51,7 +52,7 @@ class checker():
                 print("check point fail")
                 return False
 
-
+        print(f"[{datetime.now()}] Training data will be saved in {temppath}")
         temppath.joinpath("train").mkdir(exist_ok=True)
         temppath.joinpath("weight").mkdir(exist_ok=True)
         temppath.joinpath("log").mkdir(exist_ok=True)

@@ -15,30 +15,38 @@ class arguments():
         logger.info(f"Lord parameters from {path}")
         if "client_num" not in self.default:
             self.client_num = args.client_num
+            self.port = args.port
             self.check_date = args.check_date
             self.tag = args.tag
             self.distill_selection = args.distill_selection
             self.server_epoch = args.server_epoch
             self.client_epoch = args.client_epoch
             self.learning_rate = args.learning_rate
+            self.round = args.round
             self.reserve_part = args.reserve_part
             self.distill_param = args.distill_param
             self.batch_size = args.batch_size
             self.data = args.data
             self.iid = args.iid_distribution
+            self.prox = args.fedprox
+            self.adam = args.fedadam
         else :
             self.client_num = int(self.default["client_num"])
+            self.port = args.port
             self.check_date = args.check_date
             self.tag = self.default["tag"]
             self.distill_selection = int(self.default["distill_selection"])
             self.server_epoch = int(self.default["server_epoch"])
             self.client_epoch = int(self.default["client_epoch"])
             self.learning_rate = float(self.default["learning_rate"])
+            self.round = int(self.default['round'])
             self.distill_param = float(self.default["distill_param"])
             self.reserve_part = float(self.default["reserve_part"])
             self.batch_size = int(self.default["batch_size"])
             self.data = self.default["data"]   
             self.iid = int(self.default["iid"])
+            self.prox = float(self.default["prox"])
+            self.adam = int(self.default["adam"])
 
         self.loss_func = self.default["loss_func"]
         self.optim = self.default["optim"]

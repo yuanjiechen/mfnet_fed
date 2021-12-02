@@ -2,6 +2,7 @@
 import logging
 import os
 from PIL import Image
+from datetime import datetime
 
 from ipdb import set_trace as st
 
@@ -38,6 +39,7 @@ class MF_dataset(Dataset):
                     data_list.extend(self.temps[i:i + 2])
                     i += self.clients * 2
             self.names = data_list
+            print(f"[{datetime.now()}] Client {client_num} get {len(self.names)} data")
         else:
             self.names = self.temps
         logger.info(f"Client {client_num} get {len(self.names)} data")
